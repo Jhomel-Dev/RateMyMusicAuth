@@ -1,0 +1,6 @@
+@RateMyMusicAuth_HostAddress = http://localhost:5197
+
+GET {{RateMyMusicAuth_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

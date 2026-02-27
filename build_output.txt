@@ -1,0 +1,11 @@
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos están actualizados para la restauración.
+C:\Users\User\Desktop\authvaina\Program.cs(5,25): error CS0234: El tipo o el nombre del espacio de nombres 'Models' no existe en el espacio de nombres 'Microsoft.OpenApi' (¿falta alguna referencia de ensamblado?) [C:\Users\User\Desktop\authvaina\RateMyMusicAuth.csproj]
+
+ERROR al compilar.
+
+C:\Users\User\Desktop\authvaina\Program.cs(5,25): error CS0234: El tipo o el nombre del espacio de nombres 'Models' no existe en el espacio de nombres 'Microsoft.OpenApi' (¿falta alguna referencia de ensamblado?) [C:\Users\User\Desktop\authvaina\RateMyMusicAuth.csproj]
+    0 Advertencia(s)
+    1 Errores
+
+Tiempo transcurrido 00:00:01.42
