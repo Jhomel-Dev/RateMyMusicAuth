@@ -7,5 +7,7 @@ namespace RateMyMusicAuth.Interfaces
     {
         Task<AuthResponseDto> RegisterAsync(RegisterRequestDto request);
         Task<AuthResponseDto> LoginAsync(LoginRequestDto request);
+        Task<bool> CompleteProfileAsync(Guid userId, CompleteProfileRequestDto request);
+        Task<ProfileResponseDto> GetProfileAsync(Guid userId);
     }
 }

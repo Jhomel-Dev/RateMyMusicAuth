@@ -99,5 +99,38 @@ namespace RateMyMusicAuth.Services
                 Role = user.Role
             };
         }
+
+        public async Task<bool> CompleteProfileAsync(Guid userId, CompleteProfileRequestDto request)
+        {
+            var user = await _context.Users.Include(u => u.Profile).FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null) throw new InvalidOperationException("User not found.");
+
+            // Update role
+            user.Role = request.Role;
+            
+            // Update profile
+            if (user.Profile != null)
+            {
+                user.Profile.Bio = request.Bio;
+                user.Profile.AvatarUrl = request.AvatarUrl;
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<ProfileResponseDto> GetProfileAsync(Guid userId)
+        {
+            var user = await _context.Users.Include(u => u.Profile).FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null || user.Profile == null) throw new InvalidOperationException("User or Profile not found.");
+
+            return new ProfileResponseDto
+            {
+                Username = user.Profile.Username,
+                AvatarUrl = user.Profile.AvatarUrl,
+                Bio = user.Profile.Bio,
+                Role = user.Role
+            };
+        }
     }
 }

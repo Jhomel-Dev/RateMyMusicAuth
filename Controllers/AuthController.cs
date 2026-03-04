@@ -1,5 +1,7 @@
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RateMyMusicAuth.DTOs;
 using RateMyMusicAuth.Interfaces;
@@ -60,6 +62,44 @@ namespace RateMyMusicAuth.Controllers
             catch (Exception)
             {
                 return StatusCode(500, new { message = "Ocurri&#243; un error interno al iniciar sesi&#243;n." });
+            }
+        }
+
+        [Authorize]
+        [HttpPost("profile")]
+        public async Task<IActionResult> CompleteProfile([FromBody] CompleteProfileRequestDto request)
+        {
+            try
+            {
+                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdString, out Guid userId))
+                    return Unauthorized();
+
+                await _authService.CompleteProfileAsync(userId, request);
+                return Ok(new { message = "Profile updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            try
+            {
+                var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!Guid.TryParse(userIdString, out Guid userId))
+                    return Unauthorized();
+
+                var profile = await _authService.GetProfileAsync(userId);
+                return Ok(profile);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }
