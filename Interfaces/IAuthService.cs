@@ -10,5 +10,6 @@ namespace RateMyMusicAuth.Interfaces
         Task<bool> CompleteProfileAsync(Guid userId, CompleteProfileRequestDto request);
         Task<ProfileResponseDto> GetProfileAsync(Guid userId);
         Task<ProfileResponseDto> UpdateProfileAsync(Guid userId, UpdateProfileRequestDto request);
+        Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request);
     }
 }

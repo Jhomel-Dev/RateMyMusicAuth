@@ -14,5 +14,8 @@ namespace RateMyMusicAuth.Models
 
         // Propiedad de navegación - 1 a 1 con Profile
         public Profile? Profile { get; set; }
+
+        // Propiedad de navegación - 1 a N con RefreshToken
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

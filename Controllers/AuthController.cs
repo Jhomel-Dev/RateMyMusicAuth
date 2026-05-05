@@ -65,6 +65,29 @@ namespace RateMyMusicAuth.Controllers
             }
         }
 
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var response = await _authService.RefreshTokenAsync(request);
+                return Ok(response);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Ocurrió un error interno al renovar el token." });
+            }
+        }
+
         [Authorize]
         [HttpPost("profile")]
         public async Task<IActionResult> CompleteProfile([FromBody] CompleteProfileRequestDto request)

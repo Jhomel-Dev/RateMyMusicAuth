@@ -60,9 +60,24 @@ namespace RateMyMusicAuth.Services
             // Generar token JWT
             var token = _jwtProvider.GenerateToken(user, profile.Username);
 
+            // Generar Refresh Token
+            var refreshToken = GenerateRefreshToken();
+            var rfEntity = new RefreshToken
+            {
+                Token = refreshToken,
+                UserId = user.Id,
+                AddedDate = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
+                IsUsed = false,
+                IsRevoked = false
+            };
+            await _context.RefreshTokens.AddAsync(rfEntity);
+            await _context.SaveChangesAsync();
+
             return new AuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 UserId = user.Id,
                 Username = profile.Username,
                 Role = user.Role
@@ -91,9 +106,24 @@ namespace RateMyMusicAuth.Services
             // Generar token JWT
             var token = _jwtProvider.GenerateToken(user, username);
 
+            // Generar Refresh Token
+            var refreshToken = GenerateRefreshToken();
+            var rfEntity = new RefreshToken
+            {
+                Token = refreshToken,
+                UserId = user.Id,
+                AddedDate = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
+                IsUsed = false,
+                IsRevoked = false
+            };
+            await _context.RefreshTokens.AddAsync(rfEntity);
+            await _context.SaveChangesAsync();
+
             return new AuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 UserId = user.Id,
                 Username = username,
                 Role = user.Role
@@ -164,6 +194,64 @@ namespace RateMyMusicAuth.Services
                 Bio = user.Profile.Bio,
                 Role = user.Role
             };
+        }
+
+        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
+        {
+            var storedToken = await _context.RefreshTokens.Include(rt => rt.User).ThenInclude(u => u.Profile).FirstOrDefaultAsync(rt => rt.Token == request.RefreshToken);
+
+            if (storedToken == null)
+                throw new UnauthorizedAccessException("Refresh token does not exist.");
+
+            if (storedToken.IsUsed)
+                throw new UnauthorizedAccessException("Refresh token has been used.");
+
+            if (storedToken.IsRevoked)
+                throw new UnauthorizedAccessException("Refresh token has been revoked.");
+
+            if (storedToken.ExpiryDate < DateTime.UtcNow)
+                throw new UnauthorizedAccessException("Refresh token has expired.");
+
+            // Update current token to used
+            storedToken.IsUsed = true;
+            _context.RefreshTokens.Update(storedToken);
+            await _context.SaveChangesAsync();
+
+            // Generate new tokens
+            var user = storedToken.User!;
+            var username = user.Profile?.Username ?? string.Empty;
+
+            var jwtToken = _jwtProvider.GenerateToken(user, username);
+            var newRefreshToken = GenerateRefreshToken();
+
+            var newRfEntity = new RefreshToken
+            {
+                Token = newRefreshToken,
+                UserId = user.Id,
+                AddedDate = DateTime.UtcNow,
+                ExpiryDate = DateTime.UtcNow.AddDays(7),
+                IsUsed = false,
+                IsRevoked = false
+            };
+            await _context.RefreshTokens.AddAsync(newRfEntity);
+            await _context.SaveChangesAsync();
+
+            return new AuthResponseDto
+            {
+                Token = jwtToken,
+                RefreshToken = newRefreshToken,
+                UserId = user.Id,
+                Username = username,
+                Role = user.Role
+            };
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+            rng.GetBytes(randomNumber);
+            return Convert.ToBase64String(randomNumber);
         }
     }
 }
